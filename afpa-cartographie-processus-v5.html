@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFPA — Cartographie des Processus ISO 9001</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Source+Serif+4:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #f0f2ed;
+  --white: #ffffff;
+  --gray-zone: #e4e6e0;
+  --gray-deep: #d0d4cc;
+  --teal: #2d7d7d;
+  --teal-dark: #1a5252;
+  --teal-light: #e8f4f4;
+  --green: #8dc63f;
+  --green-dark: #5e8c1a;
+  --green-light: #f0f7e0;
+  --orange: #e07a2f;
+  --orange-light: #fdf0e6;
+  --text: #1a2020;
+  --text-mid: #445050;
+  --text-light: #778080;
+  --pilotage-bg: #e8eeee;
+  --pilotage-border: #b0cccc;
+  --realisation-bg: #dfe6df;
+  --realisation-border: #a0bca0;
+  --support-bg: #ece8e4;
+  --support-border: #c8c0b8;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 28px rgba(0,0,0,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+.app-header {
+  background: var(--teal-dark);
+  padding: 18px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.afpa-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.afpa-logo {
+  width: 42px; height: 42px;
+  background: var(--green);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 800; color: white;
+  letter-spacing: -0.5px;
+}
+.afpa-title h1 {
+  font-family: 'Source Serif 4', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.1;
+}
+.afpa-title p {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.iso-badge {
+  background: var(--green);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 5px 12px;
+  border-radius: 100px;
+  text-transform: uppercase;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.1);
+  padding: 5px 12px;
+  border-radius: 100px;
+}
+.breadcrumb span { color: white; font-weight: 600; }
+.breadcrumb .sep { opacity: 0.5; }
+.btn-back {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'Nunito', sans-serif;
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+.btn-back.visible { display: flex; }
+.btn-back:hover { background: rgba(255,255,255,0.25); }
+
+/* ═══════════════════════════════════════
+   VIEWS
+═══════════════════════════════════════ */
+.view { display: none; }
+.view.active { display: block; animation: viewIn 0.35s ease both; }
+
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════
+   MAP VIEW
+═══════════════════════════════════════ */
+.map-outer {
+  display: grid;
+  grid-template-columns: 30px 1fr 30px;
+  gap: 0;
+  align-items: stretch;
+  padding: 24px 20px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.side-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+}
+.side-label span {
+  writing-mode: vertical-rl;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+.side-label.right span { transform: rotate(180deg); }
+
+.map-body { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── LAYER ZONES ── */
+.layer-zone {
+  border-radius: 50px;
+  padding: 16px 20px;
+  position: relative;
+}
+.layer-zone-p { background: var(--pilotage-bg); border: 1.5px solid var(--pilotage-border); }
+.layer-zone-s { background: var(--support-bg); border: 1.5px solid var(--support-border); }
+
+.layer-zone-r {
+  background: var(--realisation-bg);
+  border: 1.5px solid var(--realisation-border);
+  border-radius: 12px 50px 50px 12px;
+  padding-left: 16px;
+  /* Arrow shape via clip-path */
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%);
+  margin-right: 10px;
+}
+
+.layer-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.proc-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+.proc-row .proc-card {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* R layer: two sub-rows */
+.r-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.r-main-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto auto;
+  gap: 8px;
+}
+
+/* ── PROCESS CARD ── */
+.proc-card {
+  background: white;
+  border-radius: 10px;
+  padding: 12px 13px 10px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border: 1.5px solid transparent;
+  animation: cardPop 0.4s ease both;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+.proc-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 0 0 10px 10px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.proc-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.proc-card:hover::after { opacity: 1; }
+
+/* Layer-specific accent */
+.layer-zone-p .proc-card::after { background: var(--teal); }
+.layer-zone-r .proc-card::after { background: var(--green); }
+.layer-zone-s .proc-card::after { background: var(--orange); }
+.layer-zone-p .proc-card:hover { border-color: var(--teal); }
+.layer-zone-r .proc-card:hover { border-color: var(--green); }
+.layer-zone-s .proc-card:hover { border-color: var(--orange); }
+
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-bottom: 7px;
+  flex-shrink: 0;
+}
+.badge-p { background: var(--teal-light); color: var(--teal-dark); }
+.badge-r { background: var(--green-light); color: var(--green-dark); }
+.badge-s { background: var(--orange-light); color: var(--orange); }
+
+.card-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text);
+  word-break: break-word;
+  hyphens: auto;
+}
+.card-hint {
+  font-size: 0.6rem;
+  color: var(--text-light);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.card-hint svg { flex-shrink: 0; }
+
+/* Legend */
+.map-legend {
+  display: flex;
+  gap: 20px;
+  padding: 8px 52px 20px;
+  font-size: 0.68rem;
+  color: var(--text-light);
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ═══════════════════════════════════════
+   FICHE D'IDENTITÉ VIEW
+═══════════════════════════════════════ */
+.fiche-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+}
+
+.fiche-hero {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 30px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border-top: 5px solid var(--teal);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+}
+.fiche-hero.layer-r { border-top-color: var(--green); }
+.fiche-hero.layer-s { border-top-color: var(--orange); }
+
+.fiche-code-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 12px 4px 6px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+}
+.fiche-code-badge.layer-p { background: var(--teal-light); color: var(--teal-dark); }
+.fiche-code-badge.layer-r { background: var(--green-light); color: var(--green-dark); }
+.fiche-code-badge.layer-s { background: var(--orange-light); color: var(--orange); }
+.fiche-code-badge .dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800; color: white;
+}
+.dot-p { background: var(--teal); }
+.dot-r { background: var(--green-dark); }
+.dot-s { background: var(--orange); }
+
+.fiche-title {
+  font-family: 'Source Serif 4', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+}
+.fiche-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 6px;
+}
+
+.fiche-meta-box {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-width: 190px;
+}
+.meta-item { margin-bottom: 10px; }
+.meta-item:last-child { margin-bottom: 0; }
+.meta-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 2px;
+}
+.meta-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* FICHE GRID */
+.fiche-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.fiche-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 20px 18px;
+  box-shadow: var(--shadow);
+}
+.fiche-card.full { grid-column: 1 / -1; }
+.fiche-card.accent-p { border-left: 4px solid var(--teal); }
+.fiche-card.accent-r { border-left: 4px solid var(--green); }
+.fiche-card.accent-s { border-left: 4px solid var(--orange); }
+.fiche-card.accent-neutral { border-left: 4px solid var(--gray-deep); }
+
+.fc-title {
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fc-title-icon {
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+}
+
+.fc-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fc-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-mid);
+}
+.fc-bullet {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.bullet-p { background: var(--teal); }
+.bullet-r { background: var(--green); }
+.bullet-s { background: var(--orange); }
+.bullet-n { background: var(--gray-deep); }
+
+.fc-text {
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--text-mid);
+}
+
+/* KPI TABLE */
+.kpi-table { width: 100%; border-collapse: collapse; }
+.kpi-table th {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  text-align: left;
+  padding: 6px 10px;
+  background: var(--bg);
+  border-radius: 4px;
+}
+.kpi-table td {
+  font-size: 0.76rem;
+  color: var(--text-mid);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--gray-zone);
+  vertical-align: top;
+}
+.kpi-table tr:last-child td { border-bottom: none; }
+.kpi-name { font-weight: 600; color: var(--text); }
+
+/* Interfaces pills */
+.interface-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.interface-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+}
+.pill-p { background: var(--teal-light); color: var(--teal-dark); border-color: var(--pilotage-border); }
+.pill-r { background: var(--green-light); color: var(--green-dark); border-color: var(--realisation-border); }
+.pill-s { background: var(--orange-light); color: var(--orange); border-color: #e8c8b0; }
+
+/* Doc tags */
+.doc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.doc-tag {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--gray-deep);
+  border-radius: 6px;
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 700px) {
+  .fiche-hero { grid-template-columns: 1fr; }
+  .fiche-grid { grid-template-columns: 1fr; }
+  .fiche-card.full { grid-column: 1; }
+  .r-grid { grid-template-columns: 1fr; }
+  .r-main-grid { grid-template-columns: 1fr 1fr; }
+  .proc-row { flex-wrap: wrap; }
+  .proc-row .proc-card { flex: 1 1 140px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-deep); border-radius: 3px; }
+
+/* ═══════════════════════════════════════
+   QUALIOPI & SCP SECTIONS
+═══════════════════════════════════════ */
+:root {
+  --qualiopi-blue: #1d5fa8;
+  --qualiopi-blue-dark: #103a6e;
+  --qualiopi-blue-light: #e6effc;
+  --qualiopi-blue-border: #9bbde8;
+  --scp-purple: #6b3fa0;
+  --scp-purple-light: #f0eaf9;
+  --scp-purple-border: #c4a8e4;
+}
+
+.qualiopi-badge {
+  background: var(--qualiopi-blue);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 5px 12px;
+  border-radius: 100px;
+  text-transform: uppercase;
+}
+
+/* Qualiopi indicator pills */
+.qualiopi-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.qualiopi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  background: var(--qualiopi-blue-light);
+  color: var(--qualiopi-blue-dark);
+  border: 1px solid var(--qualiopi-blue-border);
+  border-radius: 6px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.qualiopi-pill:hover {
+  background: #d0e4f8;
+}
+.qualiopi-pill .pill-num {
+  background: var(--qualiopi-blue);
+  color: white;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  min-width: 20px;
+  text-align: center;
+}
+.qualiopi-pill .pill-label {
+  font-weight: 500;
+  color: var(--qualiopi-blue-dark);
+  font-size: 0.67rem;
+  line-height: 1.3;
+}
+
+/* SCP practice tags */
+.scp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.scp-tag {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.7rem;
+  padding: 6px 10px;
+  background: var(--scp-purple-light);
+  border: 1px solid var(--scp-purple-border);
+  border-radius: 6px;
+  color: var(--scp-purple);
+  line-height: 1.35;
+  cursor: default;
+  transition: background 0.15s;
+  max-width: 100%;
+}
+.scp-tag:hover { background: #e2d5f5; }
+.scp-tag .scp-num {
+  background: var(--scp-purple);
+  color: white;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.scp-tag .scp-name {
+  font-weight: 500;
+  color: #3d1f6b;
+  font-size: 0.68rem;
+}
+.fiche-card.accent-qualiopi { border-left: 4px solid var(--qualiopi-blue); }
+.fiche-card.accent-scp { border-left: 4px solid var(--scp-purple); }
+
+/* ── Autorité / Pilote tags ── */
+.people-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.person-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.95);
+  font-weight: 600;
+}
+.person-role {
+  font-size: 0.62rem;
+  font-weight: 400;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 2px;
+}
+.person-tag .person-avatar {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ── Sous-processus ── */
+.sp-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+.sp-table th {
+  text-align: left;
+  padding: 5px 8px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--gray-deep);
+  font-weight: 700;
+}
+.sp-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--gray-zone);
+  color: var(--text-mid);
+  vertical-align: top;
+}
+.sp-table tr:last-child td { border-bottom: none; }
+.sp-table tr:hover td { background: var(--gray-zone); }
+.sp-code {
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  font-size: 0.7rem;
+}
+.sp-resp {
+  white-space: nowrap;
+  font-size: 0.7rem;
+  color: var(--text-mid);
+}
+.sp-resp-empty { color: var(--text-light); font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header" id="appHeader">
+  <div class="afpa-brand">
+    <div class="afpa-title">
+      <h1>Cartographie des Processus</h1>
+      <p>Système de Management de la Qualité · ISO 9001 : 2015</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="breadcrumb" id="breadcrumb">
+      <span>Vue générale</span>
+    </div>
+    <button class="btn-back" id="btnBack" onclick="showMap()">
+      ← Retour à la carte
+    </button>
+    <span class="iso-badge">ISO 9001</span>
+    <span class="qualiopi-badge">Qualiopi</span>
+  </div>
+</div>
+
+<!-- ═══════ VIEW: MAP ═══════ -->
+<div class="view active" id="viewMap">
+
+  <div class="map-outer">
+    <!-- LEFT -->
+    <div class="side-label"><span>Besoins des parties intéressées</span></div>
+
+    <div class="map-body">
+
+      <!-- PILOTAGE -->
+      <div class="layer-zone layer-zone-p">
+        <div class="layer-label">★ Processus de Pilotage</div>
+        <div class="proc-row" id="row-p"></div>
+      </div>
+
+      <!-- RÉALISATION -->
+      <div class="layer-zone layer-zone-r">
+        <div class="layer-label">◆ Processus de Réalisation</div>
+        <div class="r-grid">
+          <div id="row-r0"></div>
+          <div class="r-main-grid" id="row-r-main"></div>
+        </div>
+      </div>
+
+      <!-- SUPPORT -->
+      <div class="layer-zone layer-zone-s">
+        <div class="layer-label">● Processus de Support</div>
+        <div class="proc-row" id="row-s"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="side-label right"><span>Satisfaction des besoins des parties intéressées</span></div>
+  </div>
+
+  <div class="map-legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>Pilotage (P)</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Réalisation (R)</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span>Support (S)</div>
+    <div style="margin-left:auto;font-style:italic;">💡 Cliquez sur un processus pour ouvrir sa fiche (ISO 9001 · Qualiopi · SCP)</div>
+  </div>
+</div>
+
+<!-- ═══════ VIEW: FICHE ═══════ -->
+<div class="view" id="viewFiche">
+  <div class="fiche-container" id="ficheContent"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA — Processus AFPA
+// ═══════════════════════════════════════════════════════
+const processes = [
+  // ── PILOTAGE
+  {
+    id:'P1', layer:'p', code:'P1',
+    name:'Élaborer et partager la stratégie',
+    owner:'Direction Générale', ownerAlt:'Comité de Direction',
+    ref:'§ 4.1, 4.2, 5.1, 6.1, 6.2',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Définir la vision, les orientations stratégiques et les objectifs qualité de l\'AFPA, en tenant compte des enjeux internes/externes et des attentes des parties intéressées. Déployer et partager cette stratégie auprès de l\'ensemble des acteurs.',
+    entrees:[
+      'Analyse PESTEL et enjeux du contexte',
+      'Attentes des parties intéressées (apprenants, entreprises, État, régions...)',
+      'Résultats de la revue de direction N-1',
+      'Données de performance et benchmarks sectoriels',
+      'Orientations politiques de formation professionnelle'
+    ],
+    sorties:[
+      'Plan stratégique pluriannuel',
+      'Politique Qualité formalisée et diffusée',
+      'Objectifs qualité déclinés par niveau',
+      'Cartographie des risques et opportunités stratégiques',
+      'Tableau de bord stratégique'
+    ],
+    activites:[
+      'Réaliser le diagnostic stratégique (SWOT, PESTEL)',
+      'Définir les axes stratégiques et la politique qualité',
+      'Décliner les objectifs par processus et entité',
+      'Communiquer et partager la stratégie en interne',
+      'Suivre l\'avancement et ajuster les orientations'
+    ],
+    kpis:[
+      { nom:'Taux d\'atteinte des objectifs stratégiques', cible:'≥ 80 %', freq:'Annuelle' },
+      { nom:'Taux de diffusion de la politique qualité', cible:'100 %', freq:'Annuelle' },
+      { nom:'Nombre de revues de direction réalisées', cible:'≥ 1 / an', freq:'Annuelle' }
+    ],
+    risques:[
+      'Non-alignement entre stratégie nationale et déploiement régional',
+      'Évolutions réglementaires non anticipées',
+      'Manque d\'adhésion des équipes aux orientations'
+    ],
+    documents:['Plan stratégique AFPA', 'Politique Qualité', 'Registre des risques et opportunités', 'Tableau de bord de pilotage'],
+    interfaces:['P2','P3','R0','S2'],
+    ressources:'Direction Générale, Comité de Direction, Responsable Qualité national',
+    qualiopi:[23, 32],
+    pratiques:[36],
+    autorite:'',
+    pilote:'',
+    sousProcessus:[],
+  },
+  {
+    id:'P2', layer:'p', code:'P2',
+    name:'Piloter et manager les activités',
+    owner:'Direction des Opérations', ownerAlt:'Directeurs régionaux / de centre',
+    ref:'§ 5.1, 9.1, 9.3',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Assurer le management opérationnel des activités, suivre les performances, mobiliser les ressources et prendre les décisions nécessaires pour atteindre les objectifs qualité à tous les niveaux de l\'organisation.',
+    entrees:[
+      'Objectifs et indicateurs issus de P1',
+      'Données de performance des processus opérationnels',
+      'Remontées terrain et alertes',
+      'Rapports d\'audits internes',
+      'Indicateurs de satisfaction clients/apprenants'
+    ],
+    sorties:[
+      'Décisions managériales et plans d\'action',
+      'Comptes-rendus de revue de direction',
+      'Alertes et actions correctives déclenchées',
+      'Ressources allouées et priorisées',
+      'Communication interne sur les résultats'
+    ],
+    activites:[
+      'Animer les instances de pilotage (CODIR, revues)',
+      'Analyser les indicateurs de performance',
+      'Décider des actions correctives et préventives',
+      'Allouer les ressources humaines, financières, techniques',
+      'Communiquer les résultats aux équipes'
+    ],
+    kpis:[
+      { nom:'Taux de réalisation du programme de revues', cible:'100 %', freq:'Mensuelle' },
+      { nom:'Taux de plans d\'action soldés', cible:'≥ 85 %', freq:'Trimestrielle' },
+      { nom:'Indice de satisfaction interne (enquête)', cible:'≥ 3,5/5', freq:'Annuelle' }
+    ],
+    risques:[
+      'Dilution des responsabilités entre niveaux hiérarchiques',
+      'Manque de remontée d\'information terrain',
+      'Surcharge décisionnelle et délais de traitement'
+    ],
+    documents:['CR Revue de Direction', 'Tableau de bord opérationnel', 'Plan d\'action managérial', 'Rapport de performance'],
+    interfaces:['P1','P3','R1','R2','R5','S1','S2'],
+    ressources:'Directeurs régionaux, Responsables de centre, Contrôleurs de gestion',
+    qualiopi:[17, 18, 20, 26],
+    pratiques:[5],
+    autorite:'',
+    pilote:'',
+    sousProcessus:[],
+  },
+  {
+    id:'P3', layer:'p', code:'P3',
+    name:'Améliorer et garantir la conformité',
+    owner:'Jean-Luc Corinthe', ownerAlt:'Responsable National Qualité',
+    ref:'§ 9.1, 9.2, 9.3, 10.1, 10.2, 10.3',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Assurer la conformité du SMQ aux exigences de la norme ISO 9001:2015, traiter les non-conformités, déployer les actions correctives et animer la démarche d\'amélioration continue.',
+    entrees:[
+      'Non-conformités détectées (internes et terrain)',
+      'Rapports d\'audits internes',
+      'Réclamations et retours des parties intéressées',
+      'Résultats des indicateurs de performance',
+      'Évolutions réglementaires et normatives'
+    ],
+    sorties:[
+      'Actions correctives et préventives documentées',
+      'Rapport d\'amélioration continue',
+      'Mises à jour du SMQ',
+      'Bilan de conformité normative',
+      'Plan d\'audit interne'
+    ],
+    activites:[
+      'Traiter les non-conformités (analyse cause, action, vérification efficacité)',
+      'Planifier et réaliser les audits internes',
+      'Piloter le programme d\'amélioration continue',
+      'Assurer la veille normative et réglementaire',
+      'Animer les revues de processus'
+    ],
+    kpis:[
+      { nom:'Taux de NC traitées dans les délais', cible:'≥ 90 %', freq:'Mensuelle' },
+      { nom:'Taux de récurrence des NC', cible:'≤ 10 %', freq:'Trimestrielle' },
+      { nom:'Programme d\'audit interne réalisé', cible:'100 %', freq:'Annuelle' },
+      { nom:'Nombre d\'améliorations mises en œuvre', cible:'Croissant', freq:'Annuelle' }
+    ],
+    risques:[
+      'Sous-déclaration des non-conformités',
+      'Manque de ressources pour les audits internes',
+      'Résistance au changement dans les équipes'
+    ],
+    documents:['Procédure gestion des NC', 'Registre des NC et AC', 'Programme d\'audit interne', 'Rapport d\'amélioration', 'Procédure audit interne'],
+    interfaces:['P1','P2','R0','R1','R5','S1','S2','S3','S4','S5'],
+    ressources:'Responsable Qualité national, Auditeurs internes habilités, Référents qualité régionaux',
+    qualiopi:[23, 30, 31, 32],
+    pratiques:[33, 34, 35, 36],
+    autorite:'',
+    pilote:'',
+    sousProcessus:[],
+  },
+
+  // ── RÉALISATION
+  {
+    id:'R0', layer:'r', code:'R0',
+    name:'Développer l\'ingénierie des titres et des certifications',
+    owner:'Christophe Sadok', ownerAlt:'DRII',
+    ref:'§ 8.3, 7.5',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Concevoir, valider et maintenir les titres professionnels, certifications et programmes de formation de l\'AFPA, en réponse aux besoins du marché du travail et aux exigences réglementaires.',
+    entrees:[
+      'Référentiels métiers et emplois (RNCP, France Compétences)',
+      'Besoins des branches professionnelles et entreprises',
+      'Évolutions réglementaires et légales',
+      'Retours terrain des formateurs et apprenants',
+      'Données de résultats (taux de certification, insertion)'
+    ],
+    sorties:[
+      'Référentiels de formation validés',
+      'Supports pédagogiques et ressources d\'apprentissage',
+      'Outils d\'évaluation et grilles de certification',
+      'Titres professionnels et certifications enregistrés',
+      'Mise à jour des programmes existants'
+    ],
+    activites:[
+      'Analyser les besoins des métiers et branches professionnelles',
+      'Concevoir ou réviser les référentiels de formation',
+      'Développer les ressources pédagogiques',
+      'Valider les référentiels avec les partenaires (jury, France Compétences)',
+      'Assurer la maintenance et l\'évolution des certifications'
+    ],
+    kpis:[
+      { nom:'Taux de titres RNCP à jour', cible:'100 %', freq:'Semestrielle' },
+      { nom:'Délai moyen de développement d\'un nouveau titre', cible:'≤ 18 mois', freq:'Par projet' },
+      { nom:'Taux de satisfaction formateurs sur les supports', cible:'≥ 80 %', freq:'Annuelle' }
+    ],
+    risques:[
+      'Décalage entre référentiel et besoins réels du marché',
+      'Délais de validation France Compétences',
+      'Obsolescence rapide des contenus techniques'
+    ],
+    documents:['Référentiel de certification (RC)', 'Référentiel de formation (RF)', 'Procédure de développement pédagogique', 'Dossier d\'habilitation'],
+    interfaces:['P1','R1','R5','S2','S3'],
+    ressources:'Ingénieurs de formation, Experts métiers, Partenaires professionnels, France Compétences',
+    qualiopi:[24, 25],
+    pratiques:[37, 38],
+    autorite:'',
+    pilote:'',
+    sousProcessus:[],
+  },
+  {
+    id:'R1', layer:'r', code:'R1',
+    name:'Concevoir l\'offre de service',
+    owner:'Direction de l\'Offre', ownerAlt:'Responsables offre régionaux',
+    ref:'§ 8.1, 8.2, 8.3',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Traduire les référentiels en offres de service adaptées aux besoins des territoires et des financeurs, en définissant les modalités pédagogiques, les ressources nécessaires et les conditions de réalisation.',
+    entrees:[
+      'Référentiels issus de R0',
+      'Besoins exprimés par les entreprises et apprenants',
+      'Capacités des centres (locaux, équipements, formateurs)',
+      'Grilles de financement (CPF, Régions, Pôle emploi, OPCO)',
+      'Données de marché et veille concurrentielle'
+    ],
+    sorties:[
+      'Catalogue de formations AFPA',
+      'Fiches produits et modalités pédagogiques',
+      'Devis et propositions commerciales',
+      'Convention de formation',
+      'Programme détaillé validé'
+    ],
+    activites:[
+      'Analyser les besoins et potentiel de chaque territoire',
+      'Définir les modalités (présentiel, FOAD, alternance, bloc)',
+      'Établir les devis et propositions commerciales',
+      'Valider la faisabilité technique et pédagogique',
+      'Mettre à jour le catalogue en continu'
+    ],
+    kpis:[
+      { nom:'Taux de devis transformés en commandes', cible:'≥ 40 %', freq:'Mensuelle' },
+      { nom:'Délai de réponse à une demande de devis', cible:'≤ 5 j ouvrés', freq:'Mensuelle' },
+      { nom:'Taux de couverture territoriale de l\'offre', cible:'Croissant', freq:'Annuelle' }
+    ],
+    risques:[
+      'Inadéquation entre offre et demande locale',
+      'Concurrence accrue sur les formations phares',
+      'Difficultés de financement pour certains publics'
+    ],
+    documents:['Catalogue AFPA', 'Procédure de conception d\'offre', 'Modèle de devis/convention', 'Fiche produit formation'],
+    interfaces:['R0','R2','R5','S1','S2','S5'],
+    ressources:'Responsables offre, Directeurs de centre, Ingénieurs pédagogiques',
+    qualiopi:[5, 6, 7, 11, 12, 16, 17, 19],
+    pratiques:[7, 18, 19],
+    autorite:'Ugo DOUARD',
+    pilote:'Virginie LOISEL',
+    sousProcessus:[{code:'R1-01',nom:'Analyser les besoins du marché',responsable:''},{code:'R1-02',nom:'Concevoir les offres de service et poser le modèle d\'exploitation',responsable:''},{code:'R1-03',nom:'Marketer et communiquer les offres de service',responsable:''},{code:'R1-04',nom:'Amélioration continue de l\'offre de service',responsable:''}],
+  },
+  {
+    id:'R2', layer:'r', code:'R2',
+    name:'Commercialiser',
+    owner:'Direction Commerciale', ownerAlt:'Chargés de relation entreprise',
+    ref:'§ 8.2, 8.4',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Développer et fidéliser les relations avec les entreprises, financeurs et prescripteurs. Promouvoir les offres AFPA et conclure les accords permettant de remplir les formations.',
+    entrees:[
+      'Catalogue d\'offres issu de R1',
+      'Demandes et appels d\'offres entreprises',
+      'Données CRM (historique clients)',
+      'Plan d\'actions commercial national et régional',
+      'Données sur les marchés publics (AO Régions, État)'
+    ],
+    sorties:[
+      'Conventions et marchés signés',
+      'Commandes de formation entreprises',
+      'Flux d\'apprenants orientés vers les formations',
+      'Tableau de bord commercial',
+      'Retours marché (besoins émergents)'
+    ],
+    activites:[
+      'Prospecter et développer le portefeuille entreprises',
+      'Répondre aux appels d\'offres et marchés publics',
+      'Négocier et conclure les accords commerciaux',
+      'Assurer le suivi et la fidélisation des clients',
+      'Remonter les besoins marché à R0 et R1'
+    ],
+    kpis:[
+      { nom:'Chiffre d\'affaires formation entreprises (€)', cible:'Objectif annuel', freq:'Mensuelle' },
+      { nom:'Taux de renouvellement des contrats clients', cible:'≥ 70 %', freq:'Annuelle' },
+      { nom:'Nombre de nouveaux clients actifs', cible:'Croissant', freq:'Trimestrielle' }
+    ],
+    risques:[
+      'Perte de marchés sur des segments stratégiques',
+      'Dépendance à quelques gros clients',
+      'Réponse hors délai aux appels d\'offres'
+    ],
+    documents:['Plan d\'action commercial', 'CRM (gestion contacts)', 'Modèle de réponse à AO', 'Tableau de bord commercial'],
+    interfaces:['R1','R3','R5','S1','S5'],
+    ressources:'Chargés de relation entreprise, Directeurs de centre, Équipe réponse aux AO',
+    qualiopi:[4, 6, 7],
+    pratiques:[2, 4],
+    autorite:'Ugo DOUARD',
+    pilote:'Virginie LOISEL',
+    sousProcessus:[{code:'R2-01',nom:'Piloter des actions commerciales',responsable:''},{code:'R2-02',nom:'Piloter des actions commerciales (volet opérationnel)',responsable:''},{code:'R2-03',nom:'Sécuriser pour garantir le déploiement',responsable:''},{code:'R2-04',nom:'Sécuriser pour garantir le déploiement (suivi)',responsable:''},{code:'R2-05',nom:'Vendre / négocier',responsable:''},{code:'R2-06',nom:'Gérer la relation client / commerciale',responsable:''}],
+  },
+  {
+    id:'R3', layer:'r', code:'R3',
+    name:'Sourcer et recruter',
+    owner:'Direction des Publics', ownerAlt:'Conseillers en recrutement',
+    ref:'§ 8.2.1, 8.4',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Identifier, informer, orienter et sélectionner les candidats et apprenants pour les formations AFPA, en s\'assurant de l\'adéquation entre leur profil et les formations proposées.',
+    entrees:[
+      'Besoins en stagiaires des sessions programmées',
+      'Prescriptions des financeurs (France Travail, Régions, OPCO)',
+      'Dossiers de candidature des apprenants potentiels',
+      'Référentiel de prérequis par formation (R0)',
+      'Données du marché de l\'emploi'
+    ],
+    sorties:[
+      'Apprenants admis et inscrits',
+      'Sessions remplies aux objectifs',
+      'Dossiers administratifs apprenants constitués',
+      'Retours aux prescripteurs sur les candidats',
+      'Statistiques de recrutement'
+    ],
+    activites:[
+      'Définir et diffuser les offres de recrutement',
+      'Organiser les informations collectives et individuelles',
+      'Évaluer les prérequis et positionnement des candidats',
+      'Sélectionner et admettre les apprenants',
+      'Constituer et transmettre les dossiers administratifs'
+    ],
+    kpis:[
+      { nom:'Taux de remplissage des sessions', cible:'≥ 85 %', freq:'Par session' },
+      { nom:'Délai entre candidature et admission', cible:'≤ 10 j', freq:'Mensuelle' },
+      { nom:'Taux d\'apprenants entrant avec les prérequis', cible:'≥ 95 %', freq:'Par session' }
+    ],
+    risques:[
+      'Difficultés de recrutement sur certains territoires ou métiers',
+      'Abandon avant entrée en formation',
+      'Non-conformité des dossiers administratifs'
+    ],
+    documents:['Procédure de recrutement/admission', 'Grille de positionnement', 'Dossier d\'inscription apprenant', 'Convention individuelle de formation'],
+    interfaces:['R1','R2','R4','R5','S2'],
+    ressources:'Conseillers en formation, Formateurs (positionnement), Partenaires prescripteurs',
+    qualiopi:[1, 2, 3, 4, 8, 12],
+    pratiques:[1, 3, 20],
+    autorite:'Pierre SIMON',
+    pilote:'Corinne FAVIER',
+    sousProcessus:[{code:'R3-1',nom:'Promouvoir les offres et informer les publics',responsable:'Maria Nogteva'},{code:'R3-2',nom:'Accueillir et convaincre les publics',responsable:'Florence Balestas'},{code:'R3-3',nom:'Préconiser et co-construire des parcours',responsable:'Damien Menand'},{code:'R3-4',nom:'Contractualiser et accompagner la recherche de financement',responsable:'Damien Menand'},{code:'R3-5',nom:'Fidéliser les anciens stagiaires',responsable:'Olivier Baudrier'}],
+  },
+  {
+    id:'R4', layer:'r', code:'R4',
+    name:'Accompagner les parcours et les transitions',
+    owner:'Responsable Accompagnement', ownerAlt:'Formateurs référents / Conseillers',
+    ref:'§ 8.5, 8.2.1',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Assurer l\'accompagnement individualisé des apprenants tout au long de leur parcours de formation et faciliter leur transition vers l\'emploi ou la poursuite de parcours, en leur offrant un suivi personnalisé.',
+    entrees:[
+      'Profil et situation de chaque apprenant (R3)',
+      'Objectifs pédagogiques du parcours (R0)',
+      'Évaluations en cours de formation (R5)',
+      'Opportunités d\'insertion et réseaux entreprises (R2)',
+      'Difficultés signalées par les formateurs (R5)'
+    ],
+    sorties:[
+      'Parcours individualisés ajustés',
+      'Journal de bord / suivi apprenant',
+      'Apprenants accompagnés vers l\'emploi ou la certification',
+      'Indicateurs d\'insertion post-formation',
+      'Signalements traités (situations de rupture, difficultés)'
+    ],
+    activites:[
+      'Réaliser le bilan d\'entrée et définir le parcours individuel',
+      'Suivre la progression et ajuster les parcours',
+      'Gérer les situations de fragilité ou de rupture',
+      'Préparer et accompagner la transition vers l\'emploi',
+      'Mesurer et suivre les indicateurs d\'insertion (6 mois)'
+    ],
+    kpis:[
+      { nom:'Taux d\'insertion à 6 mois post-formation', cible:'≥ 60 %', freq:'Semestrielle' },
+      { nom:'Taux d\'abandon en cours de formation', cible:'≤ 10 %', freq:'Par session' },
+      { nom:'Taux de stagiaires avec parcours individualisé', cible:'100 % (publics fragilisés)', freq:'Par session' }
+    ],
+    risques:[
+      'Manque de ressources pour accompagnement individuel',
+      'Ruptures de parcours non anticipées',
+      'Difficultés d\'insertion sur certains bassins d\'emploi'
+    ],
+    documents:['Fiche de suivi individuel apprenant', 'Protocole d\'accompagnement', 'Outil de suivi d\'insertion', 'Charte apprenant'],
+    interfaces:['R3','R5','R6','R2','S2'],
+    ressources:'Formateurs référents, Conseillers en insertion, Psychologues du travail, Assistants sociaux',
+    qualiopi:[4, 10, 12, 14, 15, 16, 20, 26, 28, 29],
+    pratiques:[29, 30],
+    autorite:'Sophie VALAITIS',
+    pilote:'Thomas AMOUROUS / Laura TREUSSARD',
+    sousProcessus:[{code:'R4-01',nom:'Programmer les prestations d\'accompagnement',responsable:'Laura TREUSSARD'},{code:'R4-02',nom:'Mobiliser les moyens nécessaires à l\'accompagnement',responsable:'Laura TREUSSARD'},{code:'R4-03',nom:'Réaliser la prestation d\'accompagnement',responsable:'Laura TREUSSARD'},{code:'R4-04',nom:'Réaliser la prestation d\'hébergement',responsable:'Laura TREUSSARD'},{code:'R4-05',nom:'Réaliser la prestation de restauration',responsable:'Laura TREUSSARD'}],
+  },
+  {
+    id:'R5', layer:'r', code:'R5',
+    name:'Former',
+    owner:'Directeur de centre / Responsable pédagogique', ownerAlt:'Formateurs',
+    ref:'§ 8.5, 8.6, 7.1.3, 7.2',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Délivrer les actions de formation dans des conditions maîtrisées, en garantissant la qualité pédagogique, l\'atteinte des objectifs d\'apprentissage et la conformité aux référentiels de certification.',
+    entrees:[
+      'Programme et référentiel de formation (R0)',
+      'Apprenants admis (R3)',
+      'Ressources pédagogiques et plateau technique (S3)',
+      'Formateurs qualifiés et habilités (S2)',
+      'Modalités définies dans l\'offre (R1)'
+    ],
+    sorties:[
+      'Apprenants formés et évalués',
+      'Livret de formation renseigné',
+      'Relevés de présence et émargements',
+      'Évaluations formatives et sommatives',
+      'Apprenants préparés pour R6 (certification)'
+    ],
+    activites:[
+      'Préparer la session (organisation, matériels, salles)',
+      'Dispenser les enseignements théoriques et pratiques',
+      'Évaluer les acquis en continu (formatives)',
+      'Gérer les présences et incidents pédagogiques',
+      'Clôturer la session et compléter les documents qualité'
+    ],
+    kpis:[
+      { nom:'Taux de satisfaction apprenants en fin de formation', cible:'≥ 80 %', freq:'Par session' },
+      { nom:'Taux d\'atteinte des objectifs pédagogiques', cible:'≥ 75 %', freq:'Par session' },
+      { nom:'Taux de présence moyen', cible:'≥ 85 %', freq:'Par session' },
+      { nom:'Conformité documentaire (émargements, évals)', cible:'100 %', freq:'Par session' }
+    ],
+    risques:[
+      'Manque ou indisponibilité de formateurs qualifiés',
+      'Défaillance des équipements pédagogiques',
+      'Hétérogénéité forte des niveaux en groupe'
+    ],
+    documents:['Livret de formation', 'Feuilles d\'émargement', 'Grilles d\'évaluation', 'Bilan pédagogique de session', 'Procédure gestion des incidents'],
+    interfaces:['R0','R3','R4','R6','S2','S3','S4'],
+    ressources:'Formateurs habilités, Plateaux techniques, Ressources numériques (S4), Matériels et locaux (S3)',
+    qualiopi:[8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 27, 28, 29],
+    pratiques:[6, 21, 22, 23, 24, 25, 26, 27, 28],
+    autorite:'Sophie VALAITIS',
+    pilote:'Thomas AMOUROUS / Laura TREUSSARD',
+    sousProcessus:[{code:'R5-01',nom:'Programmer les prestations de formation et de certification',responsable:'Laura TREUSSARD'},{code:'R5-02',nom:'Mobiliser l\'ensemble des moyens nécessaires à la production',responsable:'Laura TREUSSARD'},{code:'R5-03',nom:'Réaliser la prestation de formation',responsable:'Laura TREUSSARD'}],
+  },
+  {
+    id:'R6', layer:'r', code:'R6',
+    name:'Organiser les certifications',
+    owner:'Responsable Certification / Jury', ownerAlt:'Délégué régional certification',
+    ref:'§ 8.5, 8.6, 8.7',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Organiser les sessions d\'évaluation certificative dans le respect des exigences de France Compétences et des jurys, en garantissant l\'équité, la confidentialité et la traçabilité des résultats.',
+    entrees:[
+      'Apprenants prêts à certifier (R5)',
+      'Référentiels d\'évaluation (R0)',
+      'Calendriers et modalités de jury (France Compétences)',
+      'Dossiers candidats constitués',
+      'Membres de jury disponibles et habilités'
+    ],
+    sorties:[
+      'Résultats de certification (titre, bloc, partiel)',
+      'Procès-verbaux de jury',
+      'Certificats et diplômes délivrés',
+      'Taux de certification transmis aux financeurs',
+      'Retours jury pour amélioration R0'
+    ],
+    activites:[
+      'Planifier et convoquer les sessions de certification',
+      'Préparer les dossiers candidats et membres de jury',
+      'Organiser les épreuves dans des conditions maîtrisées',
+      'Conduire les délibérations de jury',
+      'Éditer et archiver les résultats et certificats'
+    ],
+    kpis:[
+      { nom:'Taux de certification (titre complet)', cible:'≥ 70 %', freq:'Par session' },
+      { nom:'Taux de certification (blocs de compétences)', cible:'≥ 85 %', freq:'Par session' },
+      { nom:'Conformité des PV de jury', cible:'100 %', freq:'Par session' },
+      { nom:'Délai d\'édition des certificats', cible:'≤ 30 j', freq:'Par session' }
+    ],
+    risques:[
+      'Indisponibilité de membres de jury',
+      'Non-conformité documentaire du dossier candidat',
+      'Contestations des résultats'
+    ],
+    documents:['Règlement de jury', 'PV de délibération', 'Convocations candidats et jury', 'Procédure certification', 'Registre des titres délivrés'],
+    interfaces:['R0','R5','R4','P3','S4'],
+    ressources:'Membres de jury professionnels, Délégués régionaux, Responsables administratifs certification',
+    qualiopi:[11, 16],
+    pratiques:[],
+    autorite:'Sophie VALAITIS',
+    pilote:'Thomas AMOUROUS / Laura TREUSSARD',
+    sousProcessus:[{code:'R6-01',nom:'Gérer les agréments',responsable:'Sylvie Henriot'},{code:'R6-02',nom:'Mobiliser les moyens nécessaires aux certifications',responsable:'Sylvie Henriot'},{code:'R6-03',nom:'Mettre en œuvre la prestation de certification',responsable:'Sylvie Henriot'}],
+  },
+
+  // ── SUPPORT
+  {
+    id:'S1', layer:'s', code:'S1',
+    name:'Gérer les affaires financières',
+    owner:'Directeur Financier', ownerAlt:'Contrôleurs de gestion',
+    ref:'§ 7.1.1',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Assurer la gestion financière et comptable de l\'AFPA, garantir l\'équilibre budgétaire, sécuriser les financements des formations et fournir les données de gestion nécessaires au pilotage.',
+    entrees:[
+      'Budgets prévisionnels et plans d\'affaires',
+      'Commandes et conventions signées (R1, R2)',
+      'Factures fournisseurs (S5)',
+      'Données de réalisation des formations',
+      'Exigences des financeurs (Régions, OPCO, CPF)'
+    ],
+    sorties:[
+      'Budgets validés et tableaux de bord financiers',
+      'Factures clients émises',
+      'Paiements fournisseurs effectués',
+      'Rapports financiers et bilans',
+      'Données de coûts pour le pilotage (P2)'
+    ],
+    activites:[
+      'Élaborer et suivre les budgets',
+      'Facturer les prestations de formation',
+      'Comptabiliser et clôturer les comptes',
+      'Gérer la trésorerie',
+      'Produire les reporting financiers'
+    ],
+    kpis:[
+      { nom:'Délai moyen de facturation après réalisation', cible:'≤ 10 j', freq:'Mensuelle' },
+      { nom:'Taux de recouvrement des créances', cible:'≥ 95 %', freq:'Mensuelle' },
+      { nom:'Résultat d\'exploitation', cible:'Objectif annuel', freq:'Mensuelle' }
+    ],
+    risques:[
+      'Non-remboursement par les financeurs',
+      'Erreurs de facturation et litiges',
+      'Dépassement budgétaire sur des projets'
+    ],
+    documents:['Procédure de facturation', 'Tableau de bord financier', 'Bilan et compte de résultat', 'Procédure de gestion budgétaire'],
+    interfaces:['P1','P2','R1','R2','S5'],
+    ressources:'DAF, Comptables, Contrôleurs de gestion',
+    qualiopi:[],
+    pratiques:[],
+    autorite:'Roger MOREAU',
+    pilote:'Sandrine LEDUC',
+    sousProcessus:[{code:'S1-01',nom:'Piloter la trésorerie',responsable:'Sebastien Faucquez'},{code:'S1-02',nom:'Réaliser le dialogue de gestion',responsable:'Sebastien Faucquez'},{code:'S1-03',nom:'Comptabiliser',responsable:'Pascal Adou'},{code:'S1-04',nom:'Facturer',responsable:'Sebastien Faucquez'},{code:'S1-05',nom:'Gérer les recouvrements',responsable:'Pascal Adou'},{code:'S1-06',nom:'Gérer le risque client',responsable:'Sebastien Faucquez'},{code:'S1-07',nom:'Clôturer les comptes',responsable:'Pascal Adou'}],
+  },
+  {
+    id:'S2', layer:'s', code:'S2',
+    name:'Gérer les ressources humaines',
+    owner:'Directeur des Ressources Humaines', ownerAlt:'RRH régionaux',
+    ref:'§ 7.1.2, 7.2, 7.3, 7.4',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Recruter, développer, évaluer et fidéliser les collaborateurs de l\'AFPA pour disposer des compétences nécessaires à la réalisation de sa mission, dans le respect du dialogue social et du droit du travail.',
+    entrees:[
+      'Besoins en compétences des processus opérationnels',
+      'Stratégie et plan de formation interne',
+      'Demandes de recrutement des managers',
+      'Évaluations individuelles annuelles',
+      'Accords d\'entreprise et obligations légales'
+    ],
+    sorties:[
+      'Personnel compétent et en nombre suffisant',
+      'Matrice des compétences et habilitations à jour',
+      'Plan de développement des compétences réalisé',
+      'Dossiers individuels à jour',
+      'Indicateurs RH (absentéisme, turnover)'
+    ],
+    activites:[
+      'Planifier les effectifs et recruter',
+      'Accueillir et intégrer les nouveaux collaborateurs',
+      'Animer les entretiens annuels',
+      'Élaborer et déployer le plan de formation interne',
+      'Gérer la paie, l\'administration et le dialogue social'
+    ],
+    kpis:[
+      { nom:'Taux de réalisation du plan de formation interne', cible:'≥ 90 %', freq:'Annuelle' },
+      { nom:'Délai de recrutement (poste pourvu)', cible:'≤ 45 j', freq:'Par recrutement' },
+      { nom:'Taux d\'absentéisme', cible:'≤ 4 %', freq:'Mensuelle' },
+      { nom:'Taux de couverture habilitations formateurs', cible:'100 %', freq:'Semestrielle' }
+    ],
+    risques:[
+      'Pénurie de formateurs qualifiés sur certains métiers',
+      'Fort absentéisme perturbant les sessions',
+      'Non-conformité aux obligations légales RH'
+    ],
+    documents:['Plan de développement des compétences', 'Matrice de compétences', 'Fiche de poste', 'Procédure de recrutement', 'Règlement intérieur'],
+    interfaces:['P1','R0','R3','R5','S1'],
+    ressources:'DRH, RRH régionaux, Managers, OPCO, Partenaires sociaux',
+    qualiopi:[21, 22, 27],
+    pratiques:[10, 11, 12, 13, 14, 15, 16],
+    autorite:'Jean-Marc DUCEPT',
+    pilote:'Ludivine RANELY',
+    sousProcessus:[{code:'S2-01',nom:'Gérer les emplois et les postes',responsable:''},{code:'S2-02',nom:'Recruter et évaluer les Ressources Humaines',responsable:''},{code:'S2-03',nom:'Assurer le suivi administratif du salarié',responsable:''},{code:'S2-04',nom:'Gérer la paie',responsable:''},{code:'S2-05',nom:'Maintenir et développer les compétences',responsable:'Vincent Bercovici'},{code:'S2-06',nom:'Gérer les carrières',responsable:''},{code:'S2-07',nom:'Garantir le QVCT',responsable:''},{code:'S2-08',nom:'Garantir le fonctionnement des IRP',responsable:''},{code:'S2-09',nom:'Conduire les négociations collectives',responsable:''},{code:'S2-10',nom:'Garantir la conformité juridique',responsable:''},{code:'S2-11',nom:'Garantir la fiabilité et la lisibilité des informations RH',responsable:''}],
+  },
+  {
+    id:'S3', layer:'s', code:'S3',
+    name:'Gérer les moyens',
+    owner:'Responsable Logistique / Moyens Généraux', ownerAlt:'Responsables de site',
+    ref:'§ 7.1.3, 7.1.4',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Mettre à disposition et maintenir les infrastructures, équipements pédagogiques, logements et services nécessaires à la réalisation des formations et à l\'accueil des apprenants dans de bonnes conditions.',
+    entrees:[
+      'Besoins des sessions de formation (R5)',
+      'Plannings d\'occupation des locaux',
+      'État des équipements (vieillissement, pannes)',
+      'Exigences réglementaires (sécurité, accessibilité)',
+      'Demandes d\'investissement'
+    ],
+    sorties:[
+      'Locaux et équipements disponibles et conformes',
+      'Services d\'hébergement / restauration opérationnels',
+      'Rapports de maintenance et contrôles réglementaires',
+      'Plan d\'investissement réalisé',
+      'Certificats de conformité'
+    ],
+    activites:[
+      'Planifier et assurer la maintenance préventive et curative',
+      'Gérer les espaces et logistique des sessions',
+      'Assurer les services aux apprenants (hébergement, restauration)',
+      'Réaliser les contrôles réglementaires',
+      'Piloter les projets immobiliers'
+    ],
+    kpis:[
+      { nom:'Taux de disponibilité des locaux et équipements', cible:'≥ 98 %', freq:'Mensuelle' },
+      { nom:'Taux de contrôles réglementaires à jour', cible:'100 %', freq:'Semestrielle' },
+      { nom:'Satisfaction apprenants sur les conditions d\'accueil', cible:'≥ 3,5/5', freq:'Par session' }
+    ],
+    risques:[
+      'Équipements pédagogiques obsolètes ou défaillants',
+      'Non-conformité réglementaire (sécurité incendie, ERP)',
+      'Saturation des capacités d\'hébergement'
+    ],
+    documents:['Plan de maintenance préventive', 'Registre de sécurité', 'Procédure de gestion des locaux', 'Plan d\'investissement'],
+    interfaces:['R5','R0','S1','S2'],
+    ressources:'Responsables logistique, Techniciens de maintenance, Prestataires externes',
+    qualiopi:[17, 18],
+    pratiques:[8, 9],
+    autorite:'Roger MOREAU',
+    pilote:'Sandrine LEDUC',
+    sousProcessus:[{code:'S3-1',nom:'Organiser la santé et sécurité au travail',responsable:'Didier Le-Hech'},{code:'S3-2',nom:'Gérer les archives',responsable:'Vincent Dupuis'},{code:'S3-3',nom:'Gérer l\'immobilier',responsable:'François Laverdure'},{code:'S3-4',nom:'Exploiter les sites',responsable:'Vincent Dupuis'}],
+  },
+  {
+    id:'S4', layer:'s', code:'S4',
+    name:'Gérer et faire évoluer les SI',
+    owner:'Directeur des Systèmes d\'Information', ownerAlt:'Équipe IT / Digital',
+    ref:'§ 7.1.3',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Fournir, maintenir et faire évoluer les systèmes d\'information et outils numériques nécessaires à la réalisation des activités de l\'AFPA, en assurant leur disponibilité, sécurité et adéquation aux besoins métier.',
+    entrees:[
+      'Besoins métier exprimés par les processus',
+      'Incidents et demandes d\'évolution SI',
+      'Contraintes de sécurité et RGPD',
+      'Évolutions technologiques (digital learning, IA)',
+      'Budget SI validé (S1)'
+    ],
+    sorties:[
+      'Systèmes disponibles et performants',
+      'LMS et outils pédagogiques numériques opérationnels',
+      'Données sécurisées et conformes RGPD',
+      'Support utilisateurs assuré',
+      'Feuille de route SI actualisée'
+    ],
+    activites:[
+      'Assurer l\'exploitation et la maintenance des SI',
+      'Gérer les projets d\'évolution et de transformation digitale',
+      'Assurer la sécurité informatique et la conformité RGPD',
+      'Support et formation des utilisateurs',
+      'Gérer les relations fournisseurs IT (S5)'
+    ],
+    kpis:[
+      { nom:'Taux de disponibilité du SI', cible:'≥ 99 %', freq:'Mensuelle' },
+      { nom:'Délai moyen de résolution des incidents P1', cible:'≤ 4 h', freq:'Mensuelle' },
+      { nom:'Taux de satisfaction utilisateurs SI', cible:'≥ 75 %', freq:'Annuelle' }
+    ],
+    risques:[
+      'Cyberattaque ou incident de sécurité majeur',
+      'Obsolescence des systèmes critiques',
+      'Dépendance à des éditeurs / prestataires uniques'
+    ],
+    documents:['Politique de sécurité SI (PSSI)', 'Catalogue services IT', 'Plan de continuité d\'activité (PCA)', 'Feuille de route numérique'],
+    interfaces:['R5','R6','P2','S1','S5'],
+    ressources:'DSI, Équipe technique IT, Prestataires ESN, DPO (RGPD)',
+    qualiopi:[],
+    pratiques:[],
+    autorite:'Stéphane DESAINTFUSCIEN',
+    pilote:'Caroline MUON',
+    sousProcessus:[{code:'S4-1',nom:'Gouvernance SI',responsable:'Stéphane Desaintfuscien'},{code:'S4-2',nom:'Gestion des services SI',responsable:''},{code:'S4-3',nom:'Gestion générale SI',responsable:''}],
+  },
+  {
+    id:'S5', layer:'s', code:'S5',
+    name:'Acheter et gérer les marchés',
+    owner:'Direction des Achats', ownerAlt:'Responsables marchés publics',
+    ref:'§ 8.4',
+    version:'1.0', dateMAJ:'01/2025',
+    finalite:'Définir et mettre en œuvre la politique achats de l\'AFPA, en sélectionnant et évaluant les fournisseurs et prestataires, dans le respect du code de la commande publique et en optimisant les coûts et la qualité des achats.',
+    entrees:[
+      'Besoins d\'achats exprimés par les processus',
+      'Budget alloué (S1)',
+      'Panel fournisseurs qualifiés',
+      'Réglementation marchés publics',
+      'Évaluations fournisseurs précédentes'
+    ],
+    sorties:[
+      'Marchés et contrats signés',
+      'Fournisseurs évalués et qualifiés',
+      'Achats conformes aux besoins et au budget',
+      'Tableau de bord achats',
+      'Rapport d\'évaluation fournisseurs'
+    ],
+    activites:[
+      'Recenser et consolider les besoins d\'achats',
+      'Lancer les procédures de mise en concurrence (MAPA, AO)',
+      'Évaluer et sélectionner les fournisseurs',
+      'Négocier et contractualiser',
+      'Suivre les marchés et évaluer les fournisseurs'
+    ],
+    kpis:[
+      { nom:'Taux d\'achats couverts par marchés ou contrats', cible:'≥ 90 %', freq:'Annuelle' },
+      { nom:'Taux de fournisseurs évalués annuellement', cible:'≥ 80 %', freq:'Annuelle' },
+      { nom:'Économies achats réalisées vs budget', cible:'≥ 3 %', freq:'Annuelle' }
+    ],
+    risques:[
+      'Non-conformité au code de la commande publique',
+      'Défaillance d\'un fournisseur stratégique',
+      'Délais de procédure bloquant les projets'
+    ],
+    documents:['Politique achats', 'Règlement intérieur des achats', 'Grille d\'évaluation fournisseurs', 'Procédure marchés publics'],
+    interfaces:['S1','S3','S4','R2'],
+    ressources:'Équipe achats, Juristes marchés publics, Prescripteurs métier',
+    qualiopi:[27],
+    pratiques:[17],
+    autorite:'Roger MOREAU',
+    pilote:'Sandrine LEDUC',
+    sousProcessus:[{code:'S5-1',nom:'Anticiper et programmer les achats',responsable:'Vincent Dupuis'},{code:'S5-2',nom:'Définir et gérer une politique de gestion de fournisseurs',responsable:'Vincent Dupuis'},{code:'S5-3',nom:'Effectuer la passation des marchés',responsable:'Vincent Dupuis'},{code:'S5-4',nom:'Exécuter les marchés',responsable:'Vincent Dupuis'},{code:'S5-5',nom:'Garantir la conformité juridique des marchés',responsable:'Vincent Dupuis'}],
+  }
+];
+
+// Helper lookups
+const byId = {};
+processes.forEach(p => byId[p.id] = p);
+
+const layerName = { p:'Pilotage', r:'Réalisation', s:'Support' };
+const layerClass = { p:'layer-p', r:'layer-r', s:'layer-s' };
+const accentColor = { p:'var(--teal)', r:'var(--green)', s:'var(--orange)' };
+const badgeClass = { p:'badge-p', r:'badge-r', s:'badge-s' };
+const bulletClass = { p:'bullet-p', r:'bullet-r', s:'bullet-s' };
+const pillClass   = { p:'pill-p', r:'pill-r', s:'pill-s' };
+
+// ═══════════════════════════════════════════════════════
+//  QUALIOPI INDICATORS LABELS
+// ═══════════════════════════════════════════════════════
+const qualiopi_labels = {
+  1: 'Information sur les prestations',
+  2: 'Diffusion des indicateurs de résultats',
+  3: 'Taux de certification et débouchés',
+  4: 'Analyse du besoin (entreprise/financeur)',
+  5: 'Définition des objectifs de la prestation',
+  6: 'Adaptation des objectifs aux besoins',
+  7: 'Définition du programme de formation',
+  8: 'Positionnement et évaluation à l\'entrée',
+  9: 'Information sur le déroulé de la formation',
+  10: 'Mise en œuvre et suivi de la prestation',
+  11: 'Évaluation de l\'atteinte des objectifs',
+  12: 'Mesures pour éviter les ruptures de parcours',
+  13: 'Suivi des apprentissages en alternance',
+  14: 'Accompagnement et information des apprentis',
+  15: 'Informations spécifiques aux apprentis',
+  16: 'Conditions pour les formations certifiantes',
+  17: 'Sécurisation et coordination des moyens',
+  18: 'Coordination des interventions pédagogiques',
+  19: 'Ressources pédagogiques mises à disposition',
+  20: 'Personnel dédié aux apprentis',
+  21: 'Identification et évaluation des compétences',
+  22: 'Maintien et développement des compétences',
+  23: 'Veille légale et réglementaire formation',
+  24: 'Veille sur évolutions des compétences et métiers',
+  25: 'Veille innovations pédagogiques et technologiques',
+  26: 'Intégration personnes en situation de handicap',
+  27: 'Recours à la sous-traitance (conformité)',
+  28: 'Adaptation AFEST / partenaires socio-économiques',
+  29: 'Développement des connaissances et compétences',
+  30: 'Recueil appréciations des parties prenantes',
+  31: 'Traitement des difficultés et réclamations',
+  32: 'Amélioration continue du SMQ'
+};
+
+// ═══════════════════════════════════════════════════════
+//  SCP PRATIQUES LABELS
+// ═══════════════════════════════════════════════════════
+const scp_labels = {
+  1:  'Diffuser une fiche programme',
+  2:  'Répondre à un appel d\'offres',
+  3:  'Accueillir les clients et traiter leurs besoins',
+  4:  'Élaborer une proposition commerciale pour une entreprise',
+  5:  'Organiser un centre en lien avec sa Direction Régionale',
+  6:  'Réaliser une revue de sécurisation et/ou de lancement',
+  7:  'Maîtriser les équipements d\'un plateau technique',
+  8:  'Piloter la démarche de prévention des risques professionnels',
+  9:  'Piloter les vérifications périodiques des locaux et équipements',
+  10: 'Élaborer et mettre à jour les fiches de poste',
+  11: 'Évaluer et choisir les candidats formateurs',
+  12: 'S\'approvisionner en ressources humaines externes',
+  13: 'Réaliser les entretiens annuels',
+  14: 'Évaluer les formateurs en fin de CDD',
+  15: 'Définir le plan de développement des compétences',
+  16: 'Adapter et piloter le plan de développement des compétences',
+  17: 'Contractualiser avec le prestataire de services de formation',
+  18: 'Concevoir des prestations de formation et d\'accompagnement',
+  19: 'Concevoir des prestations de formation sur mesure',
+  20: 'Positionner sur les formations certifiantes',
+  21: 'Positionner sur les formations de perfectionnement',
+  22: 'Accueillir et intégrer les apprenants',
+  23: 'Réaliser la première journée d\'accueil d\'un apprenant',
+  24: 'Mettre en œuvre et faciliter le parcours de formation',
+  25: 'Suivre et enregistrer l\'assiduité de l\'apprenant',
+  26: 'Suivre et tracer la progression pédagogique',
+  27: 'Évaluer l\'atteinte des objectifs de la prestation',
+  28: 'Coordonner et suivre les apprentissages en entreprise',
+  29: 'Élaborer et suivre un plan d\'actions d\'accompagnement',
+  30: 'Accompagner les personnes en situation de handicap',
+  33: 'Collecter la satisfaction des parties prenantes',
+  34: 'Collecter et traiter les réclamations',
+  35: 'Évaluer et améliorer le Système de Management par la Qualité',
+  36: 'Réaliser et exploiter la veille légale et réglementaire',
+  37: 'Réaliser et exploiter la veille sur les emplois et compétences',
+  38: 'Réaliser et exploiter la veille sur les innovations pédagogiques'
+};
+
+// ═══════════════════════════════════════════════════════
+//  RENDER MAP
+// ═══════════════════════════════════════════════════════
+function makeCard(proc) {
+  const d = document.createElement('div');
+  d.className = 'proc-card';
+  d.style.animationDelay = `${Math.random() * 0.25}s`;
+  d.innerHTML = `
+    <div class="card-badge ${badgeClass[proc.layer]}">${proc.code}</div>
+    <div class="card-name">${proc.name}</div>
+    <div class="card-hint">
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><circle cx="4.5" cy="4.5" r="4" stroke="currentColor" stroke-width="1"/><path d="M4.5 3v3M3 4.5h3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      Voir la fiche · ISO 9001 · Qualiopi · SCP
+    </div>
+  `;
+  d.onclick = () => showFiche(proc.id);
+  return d;
+}
+
+// Pilotage
+['P1','P2','P3'].forEach(id => document.getElementById('row-p').appendChild(makeCard(byId[id])));
+
+// R0 alone
+document.getElementById('row-r0').appendChild(makeCard(byId['R0']));
+
+// R1-R6 in grid
+['R1','R2','R3','R4','R5','R6'].forEach(id => {
+  document.getElementById('row-r-main').appendChild(makeCard(byId[id]));
+});
+
+// Support
+['S1','S2','S3','S4','S5'].forEach(id => document.getElementById('row-s').appendChild(makeCard(byId[id])));
+
+// ═══════════════════════════════════════════════════════
+//  RENDER FICHE
+// ═══════════════════════════════════════════════════════
+function showFiche(id) {
+  const p = byId[id];
+  const acc = accentColor[p.layer];
+  const bc = bulletClass[p.layer];
+  const lc = layerClass[p.layer];
+  const ln = layerName[p.layer];
+
+  const kpiRows = p.kpis.map(k => `
+    <tr>
+      <td><span class="kpi-name">${k.nom}</span></td>
+      <td>${k.cible}</td>
+      <td>${k.freq}</td>
+    </tr>
+  `).join('');
+
+  const itf = p.interfaces.map(ref => {
+    const linked = byId[ref];
+    if (!linked) return '';
+    return `<span class="interface-pill ${pillClass[linked.layer]}">${linked.code} — ${linked.name.substring(0,30)}${linked.name.length>30?'...':''}</span>`;
+  }).join('');
+
+  const docs = p.documents.map(d => `
+    <span class="doc-tag">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 1h5l2 2v7H2V1z" stroke="currentColor" stroke-width="0.8"/><path d="M7 1v2h2" stroke="currentColor" stroke-width="0.8"/></svg>
+      ${d}
+    </span>
+  `).join('');
+
+  const entrees = p.entrees.map(e => `<li><span class="fc-bullet ${bc}"></span>${e}</li>`).join('');
+  const sorties = p.sorties.map(s => `<li><span class="fc-bullet ${bc}"></span>${s}</li>`).join('');
+  const activites = p.activites.map(a => `<li><span class="fc-bullet bullet-n"></span>${a}</li>`).join('');
+  const risques = p.risques.map(r => `<li><span class="fc-bullet" style="background:#d97706"></span>${r}</li>`).join('');
+
+  // Autorité / Pilote tags
+  function initials(name) {
+    if(!name) return '?';
+    return name.split(' ').filter(w=>w.length>1).map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  }
+  const autoritePeople = (p.autorite && p.autorite !== 'En attente de nomination' && p.autorite !== '')
+    ? `<span class="person-tag"><span class="person-avatar">${initials(p.autorite)}</span><span class="person-role">Autorité</span>${p.autorite}</span>` : '';
+  const pilotePeople = (p.pilote && p.pilote !== 'En attente de nomination' && p.pilote !== '')
+    ? `<span class="person-tag"><span class="person-avatar">${initials(p.pilote)}</span><span class="person-role">Pilote</span>${p.pilote}</span>` : '';
+  const attenteTag = (!p.autorite || p.autorite === 'En attente de nomination') && (!p.pilote || p.pilote === 'En attente de nomination')
+    ? '' : '';
+  const peopleHtml = (autoritePeople || pilotePeople)
+    ? `<div class="people-row">${autoritePeople}${pilotePeople}</div>` : '';
+
+  // Sous-processus table
+  const spHtml = (p.sousProcessus && p.sousProcessus.length > 0) ? `
+    <div class="fiche-card full accent-${p.layer}" style="margin-bottom:12px; margin-top:0">
+      <div class="fc-title">🗂️ &nbsp;Sous-processus</div>
+      <table class="sp-table">
+        <thead><tr><th>Code</th><th>Intitulé</th><th>Responsable fonctionnel</th></tr></thead>
+        <tbody>
+          ${p.sousProcessus.map(sp => `
+            <tr>
+              <td><span class="sp-code">${sp.code}</span></td>
+              <td>${sp.nom}</td>
+              <td>${sp.responsable ? `<span class="sp-resp">${sp.responsable}</span>` : '<span class="sp-resp-empty">—</span>'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  ` : '';
+
+  // Qualiopi section
+  const qualiopi_html = (p.qualiopi && p.qualiopi.length > 0) ? `
+    <div class="fiche-card full accent-qualiopi" style="margin-top:12px">
+      <div class="fc-title" style="color:#1d5fa8">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="1" y="1" width="14" height="14" rx="3" stroke="#1d5fa8" stroke-width="1.5"/><path d="M4 8l3 3 5-5" stroke="#1d5fa8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        &nbsp;Indicateurs Qualiopi associés
+      </div>
+      <div class="qualiopi-pills">
+        ${p.qualiopi.map(n => `
+          <div class="qualiopi-pill" title="Indicateur Qualiopi n°${n}">
+            <span class="pill-num">I${n}</span>
+            <span class="pill-label">${qualiopi_labels[n] || 'Indicateur ' + n}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  // SCP section
+  const scp_html = (p.pratiques && p.pratiques.length > 0) ? `
+    <div class="fiche-card full accent-scp" style="margin-top:12px">
+      <div class="fc-title" style="color:#6b3fa0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="1" y="1" width="14" height="14" rx="3" stroke="#6b3fa0" stroke-width="1.5"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#6b3fa0" stroke-width="1.5" stroke-linecap="round"/></svg>
+        &nbsp;Pratiques du Socle Commun (SCP v2.3.1)
+      </div>
+      <div class="scp-tags">
+        ${p.pratiques.map(n => `
+          <div class="scp-tag" title="Pratique SCP n°${n}">
+            <span class="scp-num">P${n}</span>
+            <span class="scp-name">${scp_labels[n] || 'Pratique ' + n}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  document.getElementById('ficheContent').innerHTML = `
+    <!-- HERO -->
+    <div class="fiche-hero ${lc}">
+      <div>
+        <div class="fiche-code-badge ${lc}">
+          <span class="dot dot-${p.layer}">${p.code}</span>
+          Processus de ${ln} · Réf. ISO&nbsp;9001:2015&nbsp;${p.ref}
+        </div>
+        <div class="fiche-title">${p.name}</div>
+        <div class="fiche-subtitle">${p.autorite ? 'Autorité Responsable : ' + p.autorite : 'Autorité Responsable : ' + p.owner} &nbsp;|&nbsp; ${p.pilote ? 'Pilote de Processus : ' + p.pilote : 'Pilote de Processus : ' + p.ownerAlt}</div>
+        ${peopleHtml}
+      </div>
+      <div class="fiche-meta-box">
+        <div class="meta-item">
+          <div class="meta-label">Code processus</div>
+          <div class="meta-value">${p.code}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Version</div>
+          <div class="meta-value">${p.version}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Mise à jour</div>
+          <div class="meta-value">${p.dateMAJ}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Référence normative</div>
+          <div class="meta-value" style="font-size:0.7rem">${p.ref}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINALITÉ -->
+    <div class="fiche-card full accent-${p.layer}" style="margin-bottom:12px">
+      <div class="fc-title">🎯 &nbsp;Finalité / Objet du processus</div>
+      <p class="fc-text">${p.finalite}</p>
+    </div>
+
+    <!-- SOUS-PROCESSUS -->
+    ${spHtml}
+
+    <!-- ENTRÉES / SORTIES -->
+    <div class="fiche-grid">
+      <div class="fiche-card accent-neutral">
+        <div class="fc-title">⬇ &nbsp;Données d'entrée</div>
+        <ul class="fc-list">${entrees}</ul>
+      </div>
+      <div class="fiche-card accent-neutral">
+        <div class="fc-title">⬆ &nbsp;Données de sortie</div>
+        <ul class="fc-list">${sorties}</ul>
+      </div>
+    </div>
+
+    <!-- ACTIVITÉS / RESSOURCES -->
+    <div class="fiche-grid" style="margin-top:12px">
+      <div class="fiche-card accent-${p.layer}">
+        <div class="fc-title">⚙️ &nbsp;Activités principales</div>
+        <ul class="fc-list">${activites}</ul>
+      </div>
+      <div class="fiche-card accent-neutral">
+        <div class="fc-title">⚠️ &nbsp;Risques principaux</div>
+        <ul class="fc-list">${risques}</ul>
+        <div style="margin-top:14px">
+          <div class="fc-title">👥 &nbsp;Ressources mobilisées</div>
+          <p class="fc-text" style="margin-top:4px">${p.ressources}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="fiche-card full" style="margin-top:12px; accent-${p.layer}; border-left:4px solid ${acc}">
+      <div class="fc-title">📊 &nbsp;Indicateurs de performance (KPIs)</div>
+      <table class="kpi-table">
+        <thead><tr>
+          <th>Indicateur</th>
+          <th>Cible</th>
+          <th>Fréquence</th>
+        </tr></thead>
+        <tbody>${kpiRows}</tbody>
+      </table>
+    </div>
+
+    <!-- INTERFACES -->
+    <div class="fiche-grid" style="margin-top:12px">
+      <div class="fiche-card accent-neutral">
+        <div class="fc-title">🔗 &nbsp;Interfaces avec d'autres processus</div>
+        <div class="interface-pills">${itf || '<span style="font-size:0.75rem;color:var(--text-light)">Aucune interface renseignée</span>'}</div>
+      </div>
+      <div class="fiche-card accent-neutral">
+        <div class="fc-title">📄 &nbsp;Documents et enregistrements associés</div>
+        <div class="doc-tags">${docs}</div>
+      </div>
+    </div>
+
+    <!-- QUALIOPI & SCP -->
+    ${qualiopi_html}
+    ${scp_html}
+  `;
+
+  document.getElementById('viewMap').classList.remove('active');
+  document.getElementById('viewFiche').classList.add('active');
+
+  // Update header background color based on process type
+  const headerColors = { p: '#1a5252', r: '#3d6b0f', s: '#b85a12' };
+  document.getElementById('appHeader').style.background = headerColors[p.layer] || 'var(--teal-dark)';
+
+  // Update breadcrumb
+  document.getElementById('breadcrumb').innerHTML = `
+    <span style="opacity:0.7;cursor:pointer" onclick="showMap()">Vue générale</span>
+    <span class="sep">›</span>
+    <span>Fiche d'Identité du Processus — ${p.code} — ${p.name}</span>
+  `;
+  document.getElementById('btnBack').classList.add('visible');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showMap() {
+  document.getElementById('viewFiche').classList.remove('active');
+  document.getElementById('viewMap').classList.add('active');
+  document.getElementById('appHeader').style.background = '';
+  document.getElementById('breadcrumb').innerHTML = '<span>Vue générale</span>';
+  document.getElementById('btnBack').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
